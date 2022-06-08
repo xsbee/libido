@@ -38,13 +38,13 @@ struct libido_search_hit {
   /* Main title of the entry. */
   const char *name;
   /* Alternative titles (if exist). */
-  const char *const *titles;
+  const char **titles;
   /* Slug to refer this entry by. */
   const char *slug;
   /* Description of the content. */
   const char *description;
   /* List of associated tags. */
-  const char *const *tags;
+  const char **tags;
   /* Number of (non-unique) viewers. */
   uint64_t views;
   /* TODO: not sure about its purpose. */
