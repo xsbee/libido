@@ -97,25 +97,25 @@ void search_hits_from_json
     hit->monthly_rank = json_object_get_uint64(json_object_object_get(hit_json, "monthly_rank"));
     hit->uploaded_at = json_object_get_uint64(json_object_object_get(hit_json, "uploaded_at"));
     hit->released_at = json_object_get_uint64(json_object_object_get(hit_json, "released_at"));
-
+    
     titles = json_object_object_get(hit_json, "titles");
     tags = json_object_object_get(hit_json, "tags");
-
+    
     num_titles = json_object_array_length(titles);
     num_tags = json_object_array_length(tags);
-
+    
     // allocate a slot more for the terminator (execv style).
     hit->titles = malloc(sizeof (const char*) * (num_titles + 1));  
     hit->tags = malloc(sizeof (const char*) * (num_tags + 1));
-
+      
     for (size_t j = 0; j < num_titles; ++j)
       hit->titles[j] = json_object_get_string(json_object_array_get_idx (titles, j));
     hit->titles[num_titles] = NULL;
-
-    for (size_t j = 0; j < num_titles; ++j)
-      hit->tags[j] = json_object_get_string(json_object_array_get_idx (titles, j));
-    hit->tags[num_titles] = NULL;
-
+    
+    for (size_t j = 0; j < num_tags; ++j)
+      hit->tags[j] = json_object_get_string(json_object_array_get_idx (tags, j));
+    hit->tags[num_tags] = NULL;
+    
     // advance to next element.
     hit_prev = hit;
     hit = hit->next;
@@ -132,19 +132,19 @@ bool search_response_from_json
   // `hits' object is, apparently, a string of JSON.
   json_object *hits_json = json_tokener_parse(
     json_object_get_string(json_object_object_get(json, "hits")));
-
+  
   if (!hits_json)
     return false;
-
+  
   res->page_no = json_object_get_uint64(json_object_object_get(json, "page"));
   res->num_pages = json_object_get_uint64(json_object_object_get(json, "nbPages"));
   res->num_hits = json_object_get_uint64(json_object_object_get(json, "nbHits"));
   res->num_hits_per_page = json_object_get_uint64(json_object_object_get(json, "hitsPerPage"));
-
+   
   if (!res->num_hits)
     res->hits = NULL;
-
+  
   search_hits_from_json(&res->hits, hits_json);
-
+  
   return true;
 }

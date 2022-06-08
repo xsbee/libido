@@ -59,10 +59,10 @@ struct libido_search_hit {
   uint64_t brand_id;
   /* Duration of the content in (ms). */
   uint64_t duration;
-  /* 
-     If the content is censored.
-     See: https://en.wikipedia.org/wiki/Pornography_in_Japan#Censorship_laws
-  */
+  /**
+    * If the content is censored.
+    * See: https://en.wikipedia.org/wiki/Pornography_in_Japan#Censorship_laws
+    */
   bool is_censored;
   /* TODO: apparently this property is null. */
   // uint64_t rating;
