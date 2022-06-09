@@ -10,6 +10,13 @@ enum libido_search_order {
   LIBIDO_ORDER_BY_DEFAULT = 0,
 };
 
+enum libido_error {
+  LIBIDO_ERROR_NOTHING,
+  LIBIDO_ERROR_SYSTEM,
+  LIBIDO_ERROR_NETWORK,
+  LIBIDO_ERROR_JSON
+};
+
 /**
  * Search query crietion request structure.
  */
@@ -92,5 +99,23 @@ struct libido_search_response {
   /* Number of hits for this page. */
   uint64_t num_hits;
   /* Linked list of results. */
-  struct libido_search_hit *hits;  
+  struct libido_search_hit *hits;
+  /* WARN: do not access this field. */
+  void *private;
 };
+
+struct libido_context* libido_new();
+
+enum libido_error libido_search
+(
+  struct libido_context *ctx,
+  struct libido_search_request req,
+  struct libido_search_response *res
+);
+
+void libido_search_response_drop
+(
+  struct libido_search_response *res
+);
+
+void libido_drop (struct libido_context *ctx);

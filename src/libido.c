@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 
 #include <curl/curl.h>
 
@@ -16,7 +17,26 @@ static const char* libido_search_order_string[] =
   "title_sortable"
 };
 
-static const char* libido_user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.61 Safari/537.36";
+// static const char *libido_user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.61 Safari/537.36";
+
+struct libido_memory {
+  void  *base;
+  size_t capacity;
+  size_t length;
+};
+
+struct libido_context {
+  CURL *c;
+  
+  struct {
+    struct {
+      struct curl_slist *headers;
+      struct libido_memory res;
+    } search;
+    
+    json_tokener *tok;
+  } cache;
+};
 
 static
 void search_request_to_json
@@ -58,28 +78,33 @@ void search_hits_from_json
   struct libido_search_hit *hit;
   struct libido_search_hit *hit_prev;
   size_t num_hits;
-
+  
   num_hits = json_object_array_length (hits);
   if (!num_hits)
     return;
-
+  
   // num_hits must be >1, if we reach here.
   hit = *res = malloc (sizeof (struct libido_search_hit));
-
-  // nothing previous this exists, it is the foremost.
-  hit_prev = hit;
-
+  
   for (size_t i = 0; i < num_hits; ++i)
   {
     json_object *titles, *tags;
     json_object *hit_json = json_object_array_get_idx (hits, i);
     size_t num_titles, num_tags;
-
-    // allocate if did not already.
+   
     if (hit == NULL)
-      hit = malloc (sizeof (struct libido_search_hit));   
-    hit->next = NULL;
-
+    {
+      hit = malloc (sizeof (struct libido_search_hit));
+      if (!hit)
+        goto drop;
+       
+      hit->next = NULL;
+      
+      // for realloc() compatibility.
+      hit->titles = NULL;
+      hit->tags = NULL;
+    }
+    
     hit->id = json_object_get_uint64(json_object_object_get(hit_json, "id"));    
     hit->name = json_object_get_string(json_object_object_get(hit_json, "name"));
     hit->slug = json_object_get_string(json_object_object_get(hit_json, "slug"));
@@ -99,15 +124,20 @@ void search_hits_from_json
     hit->released_at = json_object_get_uint64(json_object_object_get(hit_json, "released_at"));
     
     titles = json_object_object_get(hit_json, "titles");
-    tags = json_object_object_get(hit_json, "tags");
-    
     num_titles = json_object_array_length(titles);
+    
+    tags = json_object_object_get(hit_json, "tags");
     num_tags = json_object_array_length(tags);
     
-    // allocate a slot more for the terminator (execv style).
-    hit->titles = malloc(sizeof (const char*) * (num_titles + 1));  
-    hit->tags = malloc(sizeof (const char*) * (num_tags + 1));
-      
+    // allocate a slot more for the terminator (execv style). 
+    hit->titles = realloc(hit->titles, sizeof (const char*) * (num_titles + 1)); 
+    hit->tags = realloc(hit->tags, sizeof (const char*) * (num_tags + 1));
+    
+    // NOTE: maybe it would be better to notify the library
+    // user of this catastrophic condition.
+    if (!hit->titles || !hit->tags)
+      goto drop;
+    
     for (size_t j = 0; j < num_titles; ++j)
       hit->titles[j] = json_object_get_string(json_object_array_get_idx (titles, j));
     hit->titles[num_titles] = NULL;
@@ -116,9 +146,12 @@ void search_hits_from_json
       hit->tags[j] = json_object_get_string(json_object_array_get_idx (tags, j));
     hit->tags[num_tags] = NULL;
     
-    // advance to next element.
-    hit_prev = hit;
-    hit = hit->next;
+    hit = hit->next; // advance.
+
+drop:
+    if (hit)
+      free (hit);
+    break;
   }
 }
 
@@ -136,6 +169,7 @@ bool search_response_from_json
   if (!hits_json)
     return false;
   
+  res->private = hits_json;
   res->page_no = json_object_get_uint64(json_object_object_get(json, "page"));
   res->num_pages = json_object_get_uint64(json_object_object_get(json, "nbPages"));
   res->num_hits = json_object_get_uint64(json_object_object_get(json, "nbHits"));
@@ -145,6 +179,154 @@ bool search_response_from_json
     res->hits = NULL;
   
   search_hits_from_json(&res->hits, hits_json);
-  
+    
   return true;
+}
+
+static
+size_t write_to_buffer
+(
+  void  *data,
+  size_t size, 
+  size_t nmemb, 
+  void  *userp
+)
+{
+  struct libido_memory *mem = userp;
+  void *new_base;
+  size_t written, offset;
+  
+  written = size * nmemb;
+  offset = mem->length;
+  mem->length += written;
+  
+  if (mem->capacity < mem->length)
+  {
+    new_base = realloc (mem->base, mem->length);
+    
+    if (!new_base)
+      return 0; // OOM!
+    
+    mem->base = new_base;
+    mem->capacity = mem->length;
+  }
+  
+  memcpy(mem->base + offset, data, written);
+  return written;
+}
+
+struct libido_context* libido_new() {
+  struct libido_context *ctx;
+  
+  ctx = malloc (sizeof (struct libido_context));
+  if (!ctx)
+    return NULL;
+  
+  ctx->c = curl_easy_init();
+  if (!ctx->c)
+    goto drop;
+  
+  // initialise cache and stuff.  
+  ctx->cache.search.headers = curl_slist_append (NULL, "Content-Type: application/json"); 
+  ctx->cache.search.res = (struct libido_memory) {NULL, 0, 0};
+  ctx->cache.tok = json_tokener_new ();
+
+  return ctx;
+drop:
+  if (ctx)
+    free (ctx);
+  return NULL;
+}
+
+enum libido_error libido_search (
+  struct libido_context *ctx,
+  struct libido_search_request req,
+  struct libido_search_response *res
+)
+{
+  enum libido_error err;
+  int ret;
+  CURLcode cres;
+  
+  json_object *req_json, *res_json = NULL;
+  
+  search_request_to_json (req_json, req);
+
+  ctx->cache.search.res.length = 0; // reset to reuse.
+  
+  curl_easy_setopt (ctx->c, CURLOPT_URL, "https://search.htv-services.com/");
+  // curl_easy_setopt (ctx->c, CURLOPT_USERAGENT, libido_user_agent);
+  curl_easy_setopt (ctx->c, CURLOPT_HTTPHEADER, ctx->cache.search);
+  curl_easy_setopt (ctx->c, CURLOPT_POSTFIELDS, json_object_to_json_string (req_json));
+  curl_easy_setopt (ctx->c, CURLOPT_COPYPOSTFIELDS, 1);
+  curl_easy_setopt (ctx->c, CURLOPT_WRITEFUNCTION, write_to_buffer);
+  curl_easy_setopt (ctx->c, CURLOPT_FAILONERROR, 1); // HTTP 4xx
+  curl_easy_setopt (ctx->c, CURLOPT_WRITEDATA, (void*) &ctx->cache.search.res);
+  
+  json_object_put (req_json);
+  
+  cres = curl_easy_perform (ctx->c);
+  if (cres != CURLE_OK)
+  {
+    err = LIBIDO_ERROR_NETWORK;
+    goto drop;
+  }
+  
+  res_json = json_tokener_parse_ex (
+    ctx->cache.tok,
+    ctx->cache.search.res.base,
+    ctx->cache.search.res.length);
+  
+  if (!res_json)
+  {
+    json_tokener_reset (ctx->cache.tok);
+    
+    err = LIBIDO_ERROR_JSON;
+    goto drop;
+  }
+  
+  ret = search_response_from_json (res, res_json);
+  if (!ret)
+  {
+    err = LIBIDO_ERROR_JSON;
+    goto drop;
+  }
+  
+  return LIBIDO_ERROR_NOTHING;
+drop:
+  if (res_json)
+    json_object_put (res_json);
+  
+  return err;
+}
+
+void libido_search_response_drop 
+(
+  struct libido_search_response *res
+)
+{
+  struct libido_search_hit *hit = res->hits;
+  struct libido_search_hit *hit_old;
+  
+  while (hit != NULL)
+  {
+    free (hit->titles);
+    free (hit->tags);
+    
+    hit_old = hit;
+    hit = hit->next;
+    
+    free (hit_old);
+  }
+  
+  json_object_put (res->private);
+}
+
+void libido_drop (struct libido_context* ctx)
+{
+  curl_easy_cleanup (ctx->c);
+  curl_slist_free_all (ctx->cache.search.headers);
+  json_tokener_free (ctx->cache.tok);
+  
+  free (ctx);
 }
