@@ -17,8 +17,6 @@ static const char* libido_search_order_string[] =
   "title_sortable"
 };
 
-// static const char *libido_user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.61 Safari/537.36";
-
 struct libido_memory {
   void  *base;
   size_t capacity;
@@ -255,7 +253,6 @@ enum libido_error libido_search (
   ctx->cache.search.res.length = 0; // reset to reuse.
   
   curl_easy_setopt (ctx->c, CURLOPT_URL, "https://search.htv-services.com/");
-  // curl_easy_setopt (ctx->c, CURLOPT_USERAGENT, libido_user_agent);
   curl_easy_setopt (ctx->c, CURLOPT_HTTPHEADER, ctx->cache.search);
   curl_easy_setopt (ctx->c, CURLOPT_POSTFIELDS, json_object_to_json_string (req_json));
   curl_easy_setopt (ctx->c, CURLOPT_COPYPOSTFIELDS, 1);
