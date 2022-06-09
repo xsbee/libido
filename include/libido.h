@@ -66,7 +66,7 @@ struct libido_search_hit {
   uint64_t brand_id;
   /* Duration of the content in (ms). */
   uint64_t duration;
-  /**
+  /** 
     * If the content is censored.
     * See: https://en.wikipedia.org/wiki/Pornography_in_Japan#Censorship_laws
     */
@@ -96,7 +96,7 @@ struct libido_search_response {
   uint64_t num_pages;
   /* Number of results per page. */
   uint64_t num_hits_per_page;
-  /* Number of hits for this page. */
+  /* Number of hits in total. */
   uint64_t num_hits;
   /* Linked list of results. */
   struct libido_search_hit *hits;
@@ -115,7 +115,7 @@ enum libido_error libido_search
 
 void libido_search_response_drop
 (
-  struct libido_search_response *res
+  struct libido_search_response *res    
 );
 
 void libido_drop (struct libido_context *ctx);
