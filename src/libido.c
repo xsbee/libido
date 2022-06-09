@@ -8,7 +8,7 @@
 
 #include <libido.h>
 
-static const char* libido_search_order_string[] = 
+static const char *libido_search_order_string[] =
 {
   "created_at_unix",
   "views",
@@ -74,7 +74,6 @@ void search_hits_from_json
 )
 {
   struct libido_search_hit *hit;
-  struct libido_search_hit *hit_prev;
   size_t num_hits;
   
   num_hits = json_object_array_length (hits);
@@ -103,7 +102,7 @@ void search_hits_from_json
       hit->tags = NULL;
     }
     
-    hit->id = json_object_get_uint64(json_object_object_get(hit_json, "id"));    
+    hit->id = json_object_get_uint64(json_object_object_get(hit_json, "id"));
     hit->name = json_object_get_string(json_object_object_get(hit_json, "name"));
     hit->slug = json_object_get_string(json_object_object_get(hit_json, "slug"));
     hit->description = json_object_get_string(json_object_object_get(hit_json, "description"));
@@ -127,8 +126,8 @@ void search_hits_from_json
     tags = json_object_object_get(hit_json, "tags");
     num_tags = json_object_array_length(tags);
     
-    // allocate a slot more for the terminator (execv style). 
-    hit->titles = realloc(hit->titles, sizeof (const char*) * (num_titles + 1)); 
+    // allocate a slot more for the terminator (execv style).
+    hit->titles = realloc(hit->titles, sizeof (const char*) * (num_titles + 1));
     hit->tags = realloc(hit->tags, sizeof (const char*) * (num_tags + 1));
     
     // NOTE: maybe it would be better to notify the library
@@ -144,7 +143,7 @@ void search_hits_from_json
       hit->tags[j] = json_object_get_string(json_object_array_get_idx (tags, j));
     hit->tags[num_tags] = NULL;
     
-    hit = hit->next; // advance.
+    hit = hit->next; // advance
 
 drop:
     if (hit)
@@ -161,8 +160,8 @@ bool search_response_from_json
 )
 {
   // `hits' object is, apparently, a string of JSON.
-  json_object *hits_json = json_tokener_parse(
-    json_object_get_string(json_object_object_get(json, "hits")));
+  json_object *hits_json = json_tokener_parse (
+    json_object_get_string (json_object_object_get (json, "hits")));
   
   if (!hits_json)
     return false;
@@ -176,7 +175,7 @@ bool search_response_from_json
   if (!res->num_hits)
     res->hits = NULL;
   
-  search_hits_from_json(&res->hits, hits_json);
+  search_hits_from_json (&res->hits, hits_json);
     
   return true;
 }
@@ -224,8 +223,8 @@ struct libido_context* libido_new() {
   if (!ctx->c)
     goto drop;
   
-  // initialise cache and stuff.  
-  ctx->cache.search.headers = curl_slist_append (NULL, "Content-Type: application/json"); 
+  // initialise cache and stuff.
+  ctx->cache.search.headers = curl_slist_append (NULL, "Content-Type: application/json");
   ctx->cache.search.res = (struct libido_memory) {NULL, 0, 0};
   ctx->cache.tok = json_tokener_new ();
 
@@ -247,28 +246,31 @@ enum libido_error libido_search (
   CURLcode cres;
   
   json_object *req_json, *res_json = NULL;
+  const char *req_json_str;
   
+  req_json = json_object_new_object ();
   search_request_to_json (req_json, req);
-
+  
   ctx->cache.search.res.length = 0; // reset to reuse.
   
   curl_easy_setopt (ctx->c, CURLOPT_URL, "https://search.htv-services.com/");
-  curl_easy_setopt (ctx->c, CURLOPT_HTTPHEADER, ctx->cache.search);
-  curl_easy_setopt (ctx->c, CURLOPT_POSTFIELDS, json_object_to_json_string (req_json));
-  curl_easy_setopt (ctx->c, CURLOPT_COPYPOSTFIELDS, 1);
+  curl_easy_setopt (ctx->c, CURLOPT_HTTPHEADER, ctx->cache.search.headers);
+  curl_easy_setopt (ctx->c, CURLOPT_POSTFIELDS,
+    json_object_to_json_string_ext (req_json, JSON_C_TO_STRING_PLAIN));
   curl_easy_setopt (ctx->c, CURLOPT_WRITEFUNCTION, write_to_buffer);
   curl_easy_setopt (ctx->c, CURLOPT_FAILONERROR, 1); // HTTP 4xx
   curl_easy_setopt (ctx->c, CURLOPT_WRITEDATA, (void*) &ctx->cache.search.res);
+   
+  cres = curl_easy_perform (ctx->c);
   
   json_object_put (req_json);
   
-  cres = curl_easy_perform (ctx->c);
   if (cres != CURLE_OK)
   {
     err = LIBIDO_ERROR_NETWORK;
     goto drop;
   }
-  
+    
   res_json = json_tokener_parse_ex (
     ctx->cache.tok,
     ctx->cache.search.res.base,
@@ -297,7 +299,7 @@ drop:
   return err;
 }
 
-void libido_search_response_drop 
+void libido_search_response_drop
 (
   struct libido_search_response *res
 )
