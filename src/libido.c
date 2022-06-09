@@ -54,7 +54,7 @@ void search_request_to_json
   json_object_object_add(json, "ordering", json_object_new_string(req.ascending ? "asc" : "desc"));
   json_object_object_add(json, "tags_mode", json_object_new_string(req.tag_and ? "AND" : "OR"));
   json_object_object_add(json, "page", json_object_new_uint64(req.page_no));
-  json_object_object_add(json, "search_text", json_object_new_string(req.query));
+  json_object_object_add(json, "search_text", json_object_new_string(req.query ? req.query : ""));
   
   for (; *req.blacklist != NULL; ++req.blacklist)
     json_object_array_add(blacklist_json, json_object_new_string(*req.blacklist));
@@ -246,7 +246,6 @@ enum libido_error libido_search (
   CURLcode cres;
   
   json_object *req_json, *res_json = NULL;
-  const char *req_json_str;
   
   req_json = json_object_new_object ();
   search_request_to_json (req_json, req);
