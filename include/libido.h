@@ -28,11 +28,11 @@ struct libido_search_request {
   /* Property to order searches by. */
   enum libido_search_order order; 
   /* Blacklist of tags. */
-  const char *const *blacklist;
+  const char **blacklist;
   /* Production brands to look for. */
-  const char *const *brands;
+  const char **brands;
   /* Whitelist of tags. */
-  const char *const *tags;
+  const char **tags;
   /* If to order ascendingly. */
   bool ascending;
   /* If to match all of or one of the tags. */

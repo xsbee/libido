@@ -56,14 +56,17 @@ void search_request_to_json
   json_object_object_add(json, "page", json_object_new_uint64(req.page_no));
   json_object_object_add(json, "search_text", json_object_new_string(req.query ? req.query : ""));
   
-  for (; *req.blacklist != NULL; ++req.blacklist)
-    json_object_array_add(blacklist_json, json_object_new_string(*req.blacklist));
+  if (req.blacklist)
+    for (; *req.blacklist != NULL; ++req.blacklist)
+      json_object_array_add(blacklist_json, json_object_new_string(*req.blacklist));
   
-  for (; *req.brands != NULL; ++req.brands)
-    json_object_array_add(brands_json, json_object_new_string(*req.brands));
+  if (req.brands)
+    for (; *req.brands != NULL; ++req.brands)
+      json_object_array_add(brands_json, json_object_new_string(*req.brands));
   
-  for (; *req.tags != NULL; ++req.tags)
-    json_object_array_add(tags_json, json_object_new_string(*req.tags));
+  if (req.tags)
+    for (; *req.tags != NULL; ++req.tags)
+      json_object_array_add(tags_json, json_object_new_string(*req.tags));
 }
 
 static
@@ -73,16 +76,13 @@ void search_hits_from_json
   json_object *hits
 )
 {
-  struct libido_search_hit *hit;
+  struct libido_search_hit *hit, *hit_prev;
   size_t num_hits;
   
+  hit = NULL;
+  hit_prev = NULL;
   num_hits = json_object_array_length (hits);
-  if (!num_hits)
-    return;
-  
-  // num_hits must be >1, if we reach here.
-  hit = *res = malloc (sizeof (struct libido_search_hit));
-  
+ 
   for (size_t i = 0; i < num_hits; ++i)
   {
     json_object *titles, *tags;
@@ -94,12 +94,17 @@ void search_hits_from_json
       hit = malloc (sizeof (struct libido_search_hit));
       if (!hit)
         goto drop;
-       
-      hit->next = NULL;
       
-      // for realloc() compatibility.
-      hit->titles = NULL;
-      hit->tags = NULL;
+      if (i == 0)
+        *res = hit;
+      
+      hit->next = NULL; // terminator
+     
+      if (hit_prev)
+         hit_prev->next = hit; // linking
+      
+      hit->titles = NULL; // realloc()
+      hit->tags = NULL; // .. compatiblity.
     }
     
     hit->id = json_object_get_uint64(json_object_object_get(hit_json, "id"));
@@ -111,13 +116,13 @@ void search_hits_from_json
     hit->cover_url = json_object_get_string(json_object_object_get(hit_json, "cover_url"));
     hit->brand = json_object_get_string(json_object_object_get(hit_json, "brand"));
     hit->brand_id = json_object_get_uint64(json_object_object_get(hit_json, "brand_id"));
-    hit->duration = json_object_get_boolean(json_object_object_get(hit_json, "duration_in_ms"));
-    hit->is_censored = json_object_get_uint64(json_object_object_get(hit_json, "is_censored"));
+    hit->duration = json_object_get_uint64(json_object_object_get(hit_json, "duration_in_ms"));
+    hit->is_censored = json_object_get_boolean(json_object_object_get(hit_json, "is_censored"));
     hit->likes = json_object_get_uint64(json_object_object_get(hit_json, "likes"));
     hit->dislikes = json_object_get_uint64(json_object_object_get(hit_json, "dislikes"));
     hit->downloads = json_object_get_uint64(json_object_object_get(hit_json, "downloads"));
     hit->monthly_rank = json_object_get_uint64(json_object_object_get(hit_json, "monthly_rank"));
-    hit->uploaded_at = json_object_get_uint64(json_object_object_get(hit_json, "uploaded_at"));
+    hit->uploaded_at = json_object_get_uint64(json_object_object_get(hit_json, "created_at"));
     hit->released_at = json_object_get_uint64(json_object_object_get(hit_json, "released_at"));
     
     titles = json_object_object_get(hit_json, "titles");
@@ -130,8 +135,8 @@ void search_hits_from_json
     hit->titles = realloc(hit->titles, sizeof (const char*) * (num_titles + 1));
     hit->tags = realloc(hit->tags, sizeof (const char*) * (num_tags + 1));
     
-    // NOTE: maybe it would be better to notify the library
-    // user of this catastrophic condition.
+    // TODO: warn the user of a memory shortage, as a result of which
+    // results are truncated, this is however a rare condition.
     if (!hit->titles || !hit->tags)
       goto drop;
     
@@ -143,8 +148,9 @@ void search_hits_from_json
       hit->tags[j] = json_object_get_string(json_object_array_get_idx (tags, j));
     hit->tags[num_tags] = NULL;
     
-    hit = hit->next; // advance
-
+    hit_prev = hit;
+    hit = hit->next;
+    continue;
 drop:
     if (hit)
       free (hit);
