@@ -1,11 +1,8 @@
 ======
 libido
 ======
---------------------------------------
-*You have it but you pretend you don't.*
---------------------------------------
 
-This is a library to interact with **hanime.tv** API in C using json-c [1]_ and libcurl [2]_ presenting a familiar C interface.
+This is a library to interact with **hanime.tv** API, presenting a familiar C interface.
 
 Goals
 -----
@@ -13,6 +10,23 @@ I. Catering libido requirements.
 II. Bare memory consumption.
 III. Easy FFI via most languages.
 
+Building
+--------
+
+Dependencies
+~~~~~~~~~~~~
+
+- libcurl [1]_
+- libjson-c [2]_
+
+Instructions
+~~~~~~~~~~~~
+  
+.. code:: bash
+  git archive --remote=https://github.com/xsbee/libido | tar -t 
+  cd libido
+  make
+  
 FAQ
 ---
 
