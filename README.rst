@@ -81,5 +81,7 @@ For example, you can query a list of uncensored titles like this.
   ---
   ...
 
+You can install it via ``su -c "install libido/examples/libido-query /usr/local/bin"``. 
+
 .. [1] https://github.com/json-c/json-c
 .. [2] https://curl.se/libcurl/ 
