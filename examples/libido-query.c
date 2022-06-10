@@ -169,7 +169,7 @@ fetch_results:
     
     printf("  has\n    ");
     for (const char **tag = hit->tags; *tag != NULL; ++tag)
-      printf ("%s ", *tag);
+      printf ("%s  ", *tag);
     putchar ('\n');
      
     puts ("  aka");
