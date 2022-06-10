@@ -78,14 +78,17 @@ int search_req_from_args
       case 't': split_string (&req->tags, optarg, ",");
                 break;
       case 'o': // long-live linear search!
-        for (size_t i = 0; i < 5; ++i)  
+        for (size_t i = 0; i < 5; ++i)
           if (strcmp (optarg, order_strs[i].repr) == 0)
           {
             req->order = order_strs[i].order;
+            ++err;
             break;
           }
-        fprintf (stderr, "invalid order %s", optarg);
+        
         --err;
+        if (err)
+          fprintf (stderr, "invalid order %s\n", optarg);
       break;
       case ':':
         fprintf (stderr, "option -%c requires an operand\n", opt);
@@ -128,7 +131,10 @@ int main (int argc, char **argv)
   if (reti != 0)
   {
     if (reti < 0)
+    {
+      putchar ('\n');
       print_usage (argv[0]);
+    }
     goto drop;
   }
   
