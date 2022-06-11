@@ -8,7 +8,7 @@ SUBDIRS = out
 
 .SILENT: subdirs
 .PHONY: subdirs clean
-all: build build-examples
+all: build
 
 subdirs:
 	mkdir -p $(SUBDIRS)
