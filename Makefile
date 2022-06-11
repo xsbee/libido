@@ -17,7 +17,7 @@ out/%.o: src/%.c subdirs
 	gcc -c $(CFLAGS) -Iinclude/ -o $@ $<
 
 libido.so: out/libido.o
-	gcc -shared -Wl,-soname,$@ $(LDFLAGS) $< -o $@
+	gcc -shared -Wl,-soname,$@ $^ $(LDFLAGS) -o $@
 
 libido.a: out/libido.o
 	ar rcs $@ $<
