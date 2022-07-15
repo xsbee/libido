@@ -36,7 +36,8 @@ void print_usage (const char *name)
     "-t    list of tags, otherwise empty\n"
     "-o    property to order results by (can be\n"
     "      upload, views, likes, release or title),\n"
-    "      otherwise libido default\n",
+    "      otherwise libido default\n"
+    "-n    number of results to show\n",
     stderr);
 }
 
@@ -44,6 +45,7 @@ static
 int search_req_from_args
 (
   struct libido_search_request *req,
+  size_t *numres,
   int argc,
   char *const *argv
 )
@@ -58,8 +60,10 @@ int search_req_from_args
   req->tags = NULL;
   req->query = NULL;
   req->order = LIBIDO_ORDER_BY_DEFAULT;
+
+  *numres = -1; // indefinite
   
-  while ((opt = getopt (argc, argv, ":haAB:b:t:o:")) != -1)
+  while ((opt = getopt (argc, argv, ":haAB:b:t:o:n:")) != -1)
     switch (opt)
     {
       case 'h':
@@ -90,6 +94,9 @@ int search_req_from_args
         if (err)
           fprintf (stderr, "invalid order %s\n", optarg);
       break;
+      case 'n':
+        err += !sscanf(optarg, "%zu", numres);
+        break;
       case ':':
         fprintf (stderr, "option -%c requires an operand\n", opt);
         --err;
@@ -126,8 +133,9 @@ int main (int argc, char **argv)
     
   struct libido_search_request req;
   struct libido_search_response res;
+  size_t num_disp_res, res_idx;
   
-  reti = search_req_from_args (&req, argc, argv);
+  reti = search_req_from_args (&req, &num_disp_res, argc, argv);
   if (reti != 0)
   {
     if (reti < 0)
@@ -139,6 +147,7 @@ int main (int argc, char **argv)
   }
   
   req.page_no = 0;
+  res_idx = 0;
 
 fetch_results:
   idoerr = libido_search (ido, req, &res);
@@ -151,6 +160,9 @@ fetch_results:
   struct libido_search_hit *hit = res.hits;
   for (; hit != NULL; hit = hit->next)
   {
+    if (res_idx >= num_disp_res)
+      goto drop;
+
     puts ("---");
     printf ("%s (%ld)\n", hit->name, hit->id);
     printf ("\n%s\n\n", hit->description);
