@@ -36,6 +36,13 @@ And if you want to build examples,
 FAQ
 ---
 
+Why you made this?
+~~~~~~~~~~~~~~~~~~
+
+One day I and Sig were hanging about his house. Sig told his parents aren't home. So we put in the DVD drive. After doing stuff (you know what that is),
+he suddenly proposed me an idea of fetching catalog of Hentai from hanime.tv and back then .NET was very expensive in Austria and we also hated JavaScript.
+So I and Sig coauthored this program. Sig died, so all the code now belongs to me.
+
 Isn't it bad?
 ~~~~~~~~~~~~~
 
