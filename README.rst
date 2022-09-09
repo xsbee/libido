@@ -39,9 +39,9 @@ FAQ
 Why you made this?
 ~~~~~~~~~~~~~~~~~~
 
-One day I and Sig were hanging about his house. Sig told his parents aren't home. So we put in the DVD drive. After doing stuff (you know what that is),
-he suddenly proposed me an idea of fetching catalog of Hentai from hanime.tv and back then .NET was very expensive in Austria and we also hated JavaScript.
-So I and Sig coauthored this program. Sig died, so all the code now belongs to me.
+I and Sig were researching on weebs' libido. We found that weebs deviate in preference of pornography,
+they prefer a kind of anime-style animated pornography, Hentai. Back then computers weren't so advanced
+so we used the cutting-edge technology, which was C at that time.
 
 Isn't it bad?
 ~~~~~~~~~~~~~
