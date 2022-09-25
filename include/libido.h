@@ -1,3 +1,6 @@
+#ifndef LIBIDO_H
+#define LIBIDO_H
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -119,3 +122,4 @@ void libido_search_response_drop
 );
 
 void libido_drop (struct libido_context *ctx);
+#endif
