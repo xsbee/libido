@@ -2,7 +2,9 @@
 libido
 ======
 
-This is a library to interact with **hanime.tv** API, presenting a familiar C interface.
+This is a library to interact with **hanime.tv** API, presenting a familiar C interface. 
+It exists as a proof-of-concept that C is capable of doing tasks which normally high level
+programming languages do and also to show that I'm a pervert.
 
 Goals
 -----
@@ -35,13 +37,6 @@ And if you want to build examples,
   
 FAQ
 ---
-
-Why you made this?
-~~~~~~~~~~~~~~~~~~
-
-I and Sig were researching on weebs' libido. We found that weebs deviate in preference of pornography,
-they prefer a kind of anime-style animated pornography, Hentai. Back then computers weren't so advanced
-so we used the cutting-edge technology, which was C at that time.
 
 Isn't it bad?
 ~~~~~~~~~~~~~
