@@ -161,46 +161,46 @@ int main (int argc, char **argv)
     for (; hit != NULL; hit = hit->next) {
       if (n_res >= n_res_max)
         goto drop;
-
-      puts("---");
-      printf("%s (%ld)\n", hit->name, hit->id);
-      printf("\n%s\n\n", hit->description);
+  
+      puts ("---");
+      printf ("%s (%lld)\n", hit->name, hit->id);
+      printf ("\n%s\n\n", hit->description);
 
       // NOTE: apparently, this property is inconsistent.
       if (hit->duration)
-        printf("  duration %ld:%ld:%ld\n", hit->duration / 3600000,
-               hit->duration / 60000 % 60, hit->duration / 1000 % 60);
-
-      printf("  by %s (%ld)\n", hit->brand, hit->brand_id);
-      printf("  viewed by %ld otakus\n", hit->views);
-      printf("  %ld likes %ld dislikes\n", hit->likes, hit->dislikes);
-      printf("  uncensored? %s\n", hit->is_censored ? "alas!" : "oh yeah!");
-
+        printf ("  duration %lld:%lld:%lld\n", 
+          hit->duration / 3600000,
+          hit->duration / 60000 % 60,
+          hit->duration / 1000 % 60);
+      
+      printf ("  by %s (%lld)\n", hit->brand, hit->brand_id);
+      printf ("  viewed by %lld otakus\n", hit->views);
+      printf ("  %lld likes %lld dislikes\n", hit->likes, hit->dislikes);
+      printf ("  uncensored? %s\n", hit->is_censored ? "alas!" : "oh yeah!");
+      
       printf("  has\n    ");
       for (const char **tag = hit->tags; *tag != NULL; ++tag)
-        printf("%s  ", *tag);
-      putchar('\n');
-
-      puts("  aka");
+        printf ("%s  ", *tag);
+      putchar ('\n');
+      
+      puts ("  aka");
       for (const char **title = hit->titles; *title != NULL; ++title)
-        printf("    %s\n", *title);
-
-      printf("  cover %s\n", hit->cover_url);
-      printf("  poster %s\n", hit->poster_url);
-      printf("  ranking %ld\n", hit->monthly_rank);
-
-      printf("  released at %s",
-             asctime(localtime(&(const time_t){hit->released_at})));
-      printf("  uploaded at %s",
-             asctime(localtime(&(const time_t){hit->uploaded_at})));
-
-      printf("  downloaded %ld times\n", hit->downloads);
-      printf("  url https://hanime.tv/videos/hentai/%s\n", hit->slug);
-      puts("---");
+        printf ("    %s\n", *title);
+      
+      printf ("  cover %s\n", hit->cover_url);
+      printf ("  poster %s\n", hit->poster_url);
+      printf ("  ranking %lld\n", hit->monthly_rank);
+      
+      printf ("  released at %s", asctime (localtime (&(const time_t) {hit->released_at})));
+      printf ("  uploaded at %s", asctime (localtime (&(const time_t) {hit->uploaded_at})));
+      
+      printf ("  downloaded %lld times\n", hit->downloads);
+      printf ("  url https://hanime.tv/videos/hentai/%s\n", hit->slug);
+      puts ("---");
 
       ++n_res;
     }
-
+    
     ++req.page_no;
   } while (req.page_no < res.num_pages);
 
