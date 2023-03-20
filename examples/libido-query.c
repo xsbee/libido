@@ -14,8 +14,8 @@ int main (int argc, char **argv)
 
   struct libido_context *ido;
   enum libido_error idoerr;
-  int reti, n_res;
-  
+  int reti;
+
   ido = libido_new ();
   if (!ido)
   {
@@ -25,7 +25,7 @@ int main (int argc, char **argv)
     
   struct libido_search_request req;
   struct libido_search_response res;
-  size_t n_res_max;
+  size_t n_res, n_res_max;
   
   reti = search_req_from_args (&req, &n_res_max, argc, argv);
   if (reti != 0)
@@ -54,19 +54,19 @@ int main (int argc, char **argv)
         goto drop;
   
       puts ("---");
-      printf ("%s (%lld)\n", hit->name, hit->id);
+      printf ("%s (%ld)\n", hit->name, hit->id);
       printf ("\n%s\n\n", hit->description);
 
       // NOTE: apparently, this property is inconsistent.
       if (hit->duration)
-        printf ("  duration %lld:%lld:%lld\n", 
+        printf ("  duration %ld:%ld:%ld\n", 
           hit->duration / 3600000,
           hit->duration / 60000 % 60,
           hit->duration / 1000 % 60);
       
-      printf ("  by %s (%lld)\n", hit->brand, hit->brand_id);
-      printf ("  viewed by %lld otakus\n", hit->views);
-      printf ("  %lld likes %lld dislikes\n", hit->likes, hit->dislikes);
+      printf ("  by %s (%ld)\n", hit->brand, hit->brand_id);
+      printf ("  viewed by %ld otakus\n", hit->views);
+      printf ("  %ld likes %ld dislikes\n", hit->likes, hit->dislikes);
       printf ("  uncensored? %s\n", hit->is_censored ? "alas!" : "oh yeah!");
       
       printf("  has\n    ");
@@ -80,12 +80,12 @@ int main (int argc, char **argv)
       
       printf ("  cover %s\n", hit->cover_url);
       printf ("  poster %s\n", hit->poster_url);
-      printf ("  ranking %lld\n", hit->monthly_rank);
+      printf ("  ranking %ld\n", hit->monthly_rank);
       
       printf ("  released at %s", asctime (localtime (&(const time_t) {hit->released_at})));
       printf ("  uploaded at %s", asctime (localtime (&(const time_t) {hit->uploaded_at})));
       
-      printf ("  downloaded %lld times\n", hit->downloads);
+      printf ("  downloaded %ld times\n", hit->downloads);
       printf ("  url https://hanime.tv/videos/hentai/%s\n", hit->slug);
       puts ("---");
 
