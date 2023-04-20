@@ -35,6 +35,16 @@ And if you want to build examples,
   
   make -C libido/examples
   
+Installation
+------------
+
+Default installation directory is `/usr/local/lib`. Only the libido library is installed,
+along with headers, examples are not installed. To install, do,
+
+.. code-block:: sh
+
+  make install
+
 FAQ
 ---
 
