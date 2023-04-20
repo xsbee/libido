@@ -30,6 +30,7 @@ build: libido.so
 
 install:
 	install --strip $(REALNAME) $(LIBDIR)
+	cp include/libido.h $(PREFIX)/include/
 	ln -sf $(LIBDIR)/$(REALNAME) $(LIBDIR)/$(SONAME)
 	ln -sf $(LIBDIR)/$(REALNAME) $(LIBDIR)/$(LNAME)
 	ldconfig $(LIBDIR)
