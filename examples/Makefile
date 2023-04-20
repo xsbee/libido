@@ -1,13 +1,17 @@
-CC = cc
 CFLAGS = -Wall -Wextra
 CFLAGS += -I../include
-LDFLAGS = -L../ -l:libido.a
-LDFLAGS += $(shell pkg-config --libs libcurl json-c)
+LDFLAGS = -Wl,-rpath,'$$ORIGIN/../' -L../ -lido
+LDFLAGS += $(shell pkg-config --cflags --libs libcurl)
 
-EXES = libido-query
+EXES = libido-query all-posters
+
+all: libido-query all-posters
 
 libido-query: util.o libido-query.o
-	$(CC) $^ $(LDFLAGS) -o $@
+	gcc $^ $(LDFLAGS) -o $@
+
+all-posters: all-posters.o
+	gcc $^ $(LDFLAGS) -o $@
 
 .PHONY: clean
 clean:
