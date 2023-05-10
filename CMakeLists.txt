@@ -12,3 +12,5 @@ include_directories (include)
 add_subdirectory (src)
 add_subdirectory (examples)
 
+install (TARGETS ido DESTINATION lib)
+install (TARGETS libido-query DESTINATION bin)
