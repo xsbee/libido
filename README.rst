@@ -27,23 +27,20 @@ Instructions
 .. code-block:: sh
   
   git archive --remote=https://github.com/xsbee/libido | tar -t
-  make -C libido
-  
-And if you want to build examples,
-
-.. code-block:: sh
-  
-  make -C libido/examples
+  cd libido
+  mkdir build
+  cd build
+  cmake ..
+  cmake --build .
   
 Installation
 ------------
 
-Default installation directory is ``/usr/local/lib``. Only the libido library is installed,
-along with headers, examples are not installed. To install, do,
+Default PREFIX directory is ``/usr/local``. To install, do,
 
 .. code-block:: sh
 
-  make install
+  cmake --install .
 
 FAQ
 ---
