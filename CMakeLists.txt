@@ -14,3 +14,4 @@ add_subdirectory (examples)
 
 install (TARGETS ido DESTINATION lib)
 install (TARGETS libido-query DESTINATION bin)
+install (FILES "${PROJECT_SOURCE_DIR}/include/libido.h" DESTINATION include)
