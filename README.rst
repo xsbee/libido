@@ -53,7 +53,7 @@ No. Many `famous people <https://en.wikipedia.org/wiki/Albert_Einstein#Early_lif
 How to play around?
 ~~~~~~~~~~~~~~~~~~~
 
-If you have built examples, then a ``libido-query`` tool have been generated, invoke ``-h`` method on it to look what you can do with it.
+If you have built examples, then a ``libido-query`` tool have been generated in build directory, invoke ``-h`` method on it to look what you can do with it.
 For example, you can query a list of uncensored titles like this.
 
 .. code-block:: sh
@@ -89,8 +89,6 @@ For example, you can query a list of uncensored titles like this.
     url https://hanime.tv/videos/hentai/itadaki-seieki
   ---
   ...
-
-You can install it via ``su -c "install libido/examples/libido-query /usr/local/bin"``. 
 
 .. [1] https://github.com/json-c/json-c
 .. [2] https://curl.se/libcurl/ 
